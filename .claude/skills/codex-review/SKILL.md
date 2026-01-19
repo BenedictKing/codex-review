@@ -2,7 +2,7 @@
 name: codex-review
 description: 调用 codex 命令行进行代码审核，自动收集当前文件修改和任务状态一并发送；工作区干净时自动审核最新提交。触发词：代码审核、代码审查、review、code review、检查代码
 version: 2.1.0
-author: https://github.com/BenedictKing/claude-proxy/
+author: BenedictKing
 allowed-tools: Bash, Read, Glob, Write, Edit, Task
 user-invocable: true
 ---
@@ -102,6 +102,7 @@ git ls-files --others --exclude-standard -z | while IFS= read -r -d '' f; do git
 ```
 
 **说明：**
+
 - `-z` 使用 null 字符分隔文件名，正确处理包含空格/换行的文件名
 - `while IFS= read -r -d ''` 逐个读取文件名
 - `git add -- "$f"` 使用 `--` 分隔符，正确处理以 `-` 开头的文件名
@@ -121,6 +122,7 @@ git diff --stat | tail -1
 **难度评估标准：**
 
 **困难任务**（满足任一条件）：
+
 - 修改文件 ≥ 10 个
 - 代码变更 ≥ 500 行
 - 涉及核心架构/算法修改
@@ -128,6 +130,7 @@ git diff --stat | tail -1
 - 配置：`model_reasoning_effort=xhigh`，超时 30 分钟
 
 **一般任务**（其他情况）：
+
 - 配置：`model_reasoning_effort=high`，超时 10 分钟
 
 **调用 codex-runner 子任务：**

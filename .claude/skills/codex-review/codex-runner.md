@@ -2,7 +2,7 @@
 name: codex-runner
 description: 执行 Lint 和 codex review 的独立子任务（内部使用）
 version: 1.0.0
-author: https://github.com/BenedictKing/claude-proxy/
+author: BenedictKing
 allowed-tools: Bash
 context: fork
 ---
