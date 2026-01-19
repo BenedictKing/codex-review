@@ -1,9 +1,10 @@
 ---
 name: codex-runner
-description: 执行 Lint 和 codex review 的独立子任务（内部使用）
 version: 1.0.0
 author: BenedictKing
-allowed-tools: Bash
+description: 执行 Lint 和 codex review 的独立子任务（内部使用）
+allowed-tools:
+  - Bash
 context: fork
 ---
 
