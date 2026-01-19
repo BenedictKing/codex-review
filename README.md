@@ -3,274 +3,276 @@
 [![Claude Code Skill](https://img.shields.io/badge/Claude%20Code-Skill-blue)](https://skillsmp.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-简体中文 | [English](./README_EN.md)
+English | [简体中文](./README_CN.md)
 
-> 🚀 专业的代码审核技能，集成 Codex AI 审核工具，自动收集变更上下文并生成 CHANGELOG。
+> 🚀 Professional code review skill integrated with Codex AI, automatically collects change context and generates CHANGELOG.
 
-## 简介
+## Introduction
 
-Codex Review 是一个智能的 Claude Code 技能，集成了 Codex AI 审核工具。它能自动分析 Git 变更、生成 CHANGELOG 条目，并通过意图驱动的分析进行全面的代码审核。
+Codex Review is an intelligent Claude Code skill that integrates with Codex AI review tool. It automatically analyzes Git changes, generates CHANGELOG entries, and performs comprehensive code reviews with intent-driven analysis.
 
-### 核心特性
+### Key Features
 
-- ✨ **智能上下文收集**：自动分析 Git 变更，收集完整的代码修改上下文
-- 📝 **自动 CHANGELOG 生成**：检测到 CHANGELOG 未更新时，自动分析变更并生成规范条目
-- 🔄 **双模式审核**：
-  - 有未提交变更 → 审核工作区所有修改
-  - 工作区干净 → 审核最新提交
-- 🎯 **智能难度评估**：根据变更规模自动调整审核深度和超时时间
-- 🔧 **Lint 集成**：自动执行代码格式化和静态检查
-- 💡 **意图驱动审核**：结合 CHANGELOG 描述和代码变更，提供更准确的审核建议
-- 🏗️ **高效架构**：采用双技能架构，减少 Token 消耗
+- ✨ **Smart Context Collection**: Automatically analyzes Git changes and collects complete code modification context
+- 📝 **Auto CHANGELOG Generation**: Detects when CHANGELOG is not updated and automatically generates standard entries
+- 🔄 **Dual Review Modes**:
+  - Uncommitted changes → Review all workspace modifications
+  - Clean workspace → Review latest commit
+- 🎯 **Intelligent Difficulty Assessment**: Automatically adjusts review depth and timeout based on change scale
+- 🔧 **Lint Integration**: Automatically executes code formatting and static checks
+- 💡 **Intent-Driven Review**: Combines CHANGELOG descriptions with code changes for more accurate review suggestions
+- 🏗️ **Efficient Architecture**: Uses dual-skill architecture to reduce token consumption
 
-## 快速开始
+## Quick Start
 
-5 分钟完成配置
+Set up in 5 minutes
 
-## 安装方式
+## Installation
 
-### 方式一：使用 add-skill 安装（推荐）
+### Option 1: Install via add-skill (Recommended)
 
 ```bash
-# 安装到 Claude Code
+# Install to Claude Code
 npx add-skill BenedictKing/codex-review
 
-# 或全局安装到所有检测到的代理
+# Or install globally to all detected agents
 npx add-skill BenedictKing/codex-review -g
 ```
 
-Skill 会自动安装到 `~/.claude/skills/codex-review` 并被 Claude Code 加载。
+The skill will be automatically installed to `~/.claude/skills/codex-review` and loaded by Claude Code.
 
-### 方式二：通过 Git Clone 手动安装
+### Option 2: Manual Installation via Git Clone
 
 ```bash
-# 克隆到 Claude Code 的 skills 目录
+# Clone to Claude Code's skills directory
 git clone https://github.com/BenedictKing/codex-review.git ~/.claude/skills/codex-review
 
-# 或克隆到你偏好的位置
+# Or clone to your preferred location
 git clone https://github.com/BenedictKing/codex-review.git
 cd codex-review
 ```
 
-## 依赖要求
+## Prerequisites
 
-### 必需
+### Required
 
-- **Git 仓库**：必须在 Git 仓库目录下执行
-- **Codex CLI**：需要安装并配置 [Codex](https://codex.ai/) 命令行工具
-- **CHANGELOG.md**：项目根目录需要有 CHANGELOG.md 文件
+- **Git Repository**: Must be executed in a Git repository directory
+- **Codex CLI**: Need to install and configure [Codex](https://codex.ai/) command-line tool
+- **CHANGELOG.md**: Project root directory needs a CHANGELOG.md file
 
-### 可选（根据项目类型）
+### Optional (Based on Project Type)
 
-- **Go 项目**：`go fmt`、`go vet`
-- **Node 项目**：`npm run lint`
-- **Python 项目**：`black`、`ruff`
+- **Go Projects**: `go fmt`, `go vet`
+- **Node Projects**: `npm run lint`
+- **Python Projects**: `black`, `ruff`
 
-## 🚀 使用方法
+## Usage
 
-### 通过斜杠命令
+### Via Slash Command
 
 ```bash
 /codex-review
 ```
 
-### 通过自然语言
+### Via Natural Language
 
 ```
+"code review"
+"review my code"
+"check the code"
 "代码审核"
-"帮我审查一下代码"
-"review 一下"
-"检查代码"
 ```
 
-## 📋 工作流程
+## How It Works
 
-### 1. 检查工作区状态
+### 1. Check Workspace Status
 
-自动检测是否有未提交的变更，决定审核模式。
+Automatically detects if there are uncommitted changes and decides the review mode.
 
-### 2. CHANGELOG 检查与自动生成
+### 2. CHANGELOG Check & Auto-Generation
 
-如果 CHANGELOG.md 未更新，技能会：
-1. 分析 `git diff` 获取完整变更
-2. 自动生成符合规范的 CHANGELOG 条目
-3. 使用 Edit 工具写入文件
-4. 继续执行审核流程
+If CHANGELOG.md is not updated, the skill will:
+1. Analyze `git diff` to get complete changes
+2. Automatically generate standard CHANGELOG entries
+3. Use Edit tool to write to file
+4. Continue with review process
 
-**自动生成的 CHANGELOG 格式**：
+**Auto-generated CHANGELOG format**:
 
 ```markdown
 ## [Unreleased]
 
-### Added（新功能）/ Changed（修改）/ Fixed（修复）
+### Added / Changed / Fixed
 
-- 功能描述：解决了什么问题或实现了什么功能
-- 涉及文件：主要修改的文件/模块
+- Feature description: What problem was solved or what functionality was implemented
+- Affected files: Main modified files/modules
 ```
 
-### 3. 暂存新增文件（v2.1.0 新增）
+### 3. Stage New Files (v2.1.0)
 
-**自动将所有新增文件加入 git 暂存区，避免 codex 报 P1 错误。**
+**Automatically adds all new files to git staging area to avoid codex P1 errors.**
 
 ```bash
-# 安全地暂存所有新增文件（处理空列表和特殊文件名）
+# Safely stage all new files (handles empty lists and special filenames)
 git ls-files --others --exclude-standard -z | while IFS= read -r -d '' f; do git add -- "$f"; done
 ```
 
-**特点：**
-- 使用 null 字符分隔，正确处理包含空格/换行的文件名
-- 使用 `--` 分隔符，正确处理以 `-` 开头的文件名
-- 当没有新增文件时，循环体不执行，安全跳过
-- 只处理新增文件，不暂存已修改的文件
-- 自动排除 .gitignore 中的文件
+**Features:**
+- Uses null character separation to correctly handle filenames with spaces/newlines
+- Uses `--` separator to correctly handle filenames starting with `-`
+- Loop body doesn't execute when there are no new files, safely skips
+- Only processes new files, doesn't stage modified files
+- Automatically excludes files in .gitignore
 
-### 4. 智能难度评估
+### 4. Intelligent Difficulty Assessment
 
-根据变更规模自动选择审核配置：
+Automatically selects review configuration based on change scale:
 
-| 难度级别 | 触发条件 | 配置 | 超时时间 |
-|---------|---------|------|---------|
-| **困难任务** | 修改文件 ≥ 10 个<br>代码变更 ≥ 500 行<br>核心架构修改 | `model_reasoning_effort=xhigh` | 30 分钟 |
-| **一般任务** | 其他情况 | `model_reasoning_effort=high` | 10 分钟 |
+| Difficulty | Trigger Conditions | Configuration | Timeout |
+|-----------|-------------------|---------------|---------|
+| **Hard Task** | Modified files ≥ 10<br>Code changes ≥ 500 lines<br>Core architecture changes | `model_reasoning_effort=xhigh` | 30 minutes |
+| **Normal Task** | Other cases | `model_reasoning_effort=high` | 10 minutes |
 
-### 5. Lint + Codex 审核
+### 5. Lint + Codex Review
 
-自动执行项目对应的 Lint 工具：
+Automatically executes project-specific Lint tools:
 
-- **Go 项目**：`go fmt ./... && go vet ./...`
-- **Node 项目**：`npm run lint:fix`
-- **Python 项目**：`black . && ruff check --fix .`
+- **Go Projects**: `go fmt ./... && go vet ./...`
+- **Node Projects**: `npm run lint:fix`
+- **Python Projects**: `black . && ruff check --fix .`
 
-然后调用 `codex review` 进行 AI 代码审核。
+Then calls `codex review` for AI code review.
 
-### 6. 自我修正
+### 6. Self-Correction
 
-如果 Codex 发现 CHANGELOG 描述与代码逻辑不一致：
-- **代码错误** → 修复代码
-- **描述不准确** → 更新 CHANGELOG
+If Codex finds inconsistencies between CHANGELOG description and code logic:
+- **Code error** → Fix code
+- **Inaccurate description** → Update CHANGELOG
 
-## 📦 依赖要求
+## Dual-Skill Architecture
 
-### 必需
-
-- **Git 仓库**：必须在 Git 仓库目录下执行
-- **Codex CLI**：需要安装并配置 [Codex](https://codex.ai/) 命令行工具
-- **CHANGELOG.md**：项目根目录需要有 CHANGELOG.md 文件
-
-### 可选（根据项目类型）
-
-- **Go 项目**：`go fmt`、`go vet`
-- **Node 项目**：`npm run lint`
-- **Python 项目**：`black`、`ruff`
-
-## 🎯 使用场景
-
-### 场景 1：日常开发审核
+This project uses a **two-stage architecture**, inspired by the `codex-review` design pattern:
 
 ```
-用户：修改了几个文件，想审核一下
-技能：
-1. 检测到 3 个文件修改，200 行变更
-2. 检查 CHANGELOG 未更新，自动生成条目
-3. 执行 go fmt && go vet
-4. 调用 codex review --uncommitted --config model_reasoning_effort=high
-5. 返回审核结果和改进建议
+User Request → Main Skill (codex-review)
+                ↓ Check workspace + Update CHANGELOG
+           Task Tool → Sub-Skill (codex-runner)
+                ↓ Execute Lint + codex review (independent context)
+           Main Skill ← Return review results
+                ↓ Self-correction if needed
+           User ← Review results + Suggestions
 ```
 
-### 场景 2：大规模重构审核
+**Why this design?**
+
+| Aspect | Main Skill | Sub-Skill |
+|--------|-----------|-----------|
+| Context | Full conversation | Fork (independent) |
+| Purpose | Intent analysis + CHANGELOG | Lint + Review execution |
+| Token usage | Higher | Lower |
+| Execution | Sequential | Independent |
+
+**Benefits:**
+- Main skill needs to understand user intent and conversation history (requires context)
+- Lint and review execution don't need conversation history (avoids wasting tokens)
+- Separation improves efficiency and reduces costs
+
+### Core Philosophy: Intent vs Implementation
+
+Simply running `codex review --uncommitted` only lets AI see "what was done (Implementation)".
+
+By recording intent first (CHANGELOG), you're telling AI "what you want to do (Intention)".
+
+**"Code changes + Intent description" as input together is the most efficient way to improve AI code review quality.**
+
+## Use Cases
+
+### Case 1: Daily Development Review
 
 ```
-用户：重构了整个模块，需要全面审核
-技能：
-1. 检测到 15 个文件修改，800 行变更
-2. 判定为困难任务
-3. 自动生成 CHANGELOG 条目
-4. 执行 Lint
-5. 调用 codex review --uncommitted --config model_reasoning_effort=xhigh
-6. 30 分钟超时，深度审核
+User: Modified a few files, want to review
+Skill:
+1. Detected 3 files modified, 200 lines changed
+2. Checked CHANGELOG not updated, auto-generated entry
+3. Executed go fmt && go vet
+4. Called codex review --uncommitted --config model_reasoning_effort=high
+5. Returned review results and improvement suggestions
 ```
 
-### 场景 3：审核最新提交
+### Case 2: Large-Scale Refactoring Review
 
 ```
-用户：工作区干净，想审核刚才的提交
-技能：
-1. 检测到工作区干净
-2. 直接调用 codex review --commit HEAD
-3. 返回审核结果
+User: Refactored entire module, need comprehensive review
+Skill:
+1. Detected 15 files modified, 800 lines changed
+2. Determined as hard task
+3. Auto-generated CHANGELOG entry
+4. Executed Lint
+5. Called codex review --uncommitted --config model_reasoning_effort=xhigh
+6. 30-minute timeout, deep review
 ```
 
-## 🔧 配置说明
+### Case 3: Review Latest Commit
 
-### Codex Review 命令参考
+```
+User: Workspace clean, want to review recent commit
+Skill:
+1. Detected clean workspace
+2. Directly called codex review --commit HEAD
+3. Returned review results
+```
+
+## Codex Review Command Reference
+
+### Basic Syntax
 
 ```bash
-# 审核所有未提交的更改
+codex review [OPTIONS] [PROMPT]
+```
+
+**Note**: `[PROMPT]` parameter cannot be used with `--uncommitted`, `--base`, or `--commit`.
+
+### Common Options
+
+| Option | Description | Example |
+|--------|-------------|---------|
+| `--uncommitted` | Review all uncommitted changes in workspace | `codex review --uncommitted` |
+| `--base <BRANCH>` | Review changes relative to specified base branch | `codex review --base main` |
+| `--commit <SHA>` | Review changes introduced by specified commit | `codex review --commit HEAD` |
+| `--title <TITLE>` | Optional commit title, displayed in review summary | `codex review --uncommitted --title "feat: add JSON parser"` |
+| `-c, --config <key=value>` | Override configuration values | `codex review --uncommitted -c model="o3"` |
+
+### Usage Examples
+
+```bash
+# 1. Review all uncommitted changes (most common)
 codex review --uncommitted
 
-# 审核最新提交
+# 2. Review latest commit
 codex review --commit HEAD
 
-# 审核指定提交
+# 3. Review specific commit
 codex review --commit abc1234
 
-# 审核相对于 main 分支的所有更改
+# 4. Review all changes in current branch relative to main
 codex review --base main
 
-# 使用特定模型
+# 5. Review with specific model
 codex review --uncommitted -c model="o3"
 
-# 调整推理深度
+# 6. Adjust reasoning depth
 codex review --uncommitted -c model_reasoning_effort=xhigh
 ```
 
-### 重要限制
+### Important Limitations
 
-- `--uncommitted`、`--base`、`--commit` 三者互斥
-- 必须在 Git 仓库目录下执行
-- CHANGELOG.md 必须在未提交变更中，否则 Codex 无法看到意图描述
+- `--uncommitted`, `--base`, `--commit` are mutually exclusive
+- Must be executed in a Git repository directory
+- CHANGELOG.md must be in uncommitted changes, otherwise Codex cannot see intent description
 
-## 🏗️ 架构设计
+## CHANGELOG Format
 
-### 双技能架构
-
-本项目采用**两阶段架构**，参考了 context7-auto-research 的设计模式：
-
-```
-用户请求 → 主技能 (codex-review)
-              ↓ 检查工作区 + 更新 CHANGELOG
-         Task 工具 → 子技能 (codex-runner)
-              ↓ 执行 Lint + codex review（独立上下文）
-         主技能 ← 返回审核结果
-              ↓ 必要时进行自我修正
-         用户 ← 审核结果 + 改进建议
-```
-
-**为什么这样设计？**
-
-| 方面 | 主技能 | 子技能 |
-|------|--------|--------|
-| 上下文 | 完整对话历史 | Fork（独立） |
-| 用途 | 意图分析 + CHANGELOG | Lint + 审核执行 |
-| Token 消耗 | 较高 | 较低 |
-| 执行方式 | 顺序 | 独立 |
-
-**优势：**
-- 主技能需要理解用户意图和对话历史（需要上下文）
-- Lint 和审核执行不需要对话历史（避免浪费 Token）
-- 分离后提高效率，降低成本
-
-### 核心理念：意图 vs 实现
-
-单纯运行 `codex review --uncommitted` 只让 AI 看"做了什么 (Implementation)"。
-
-通过先记录意图（CHANGELOG），是在告诉 AI "想做什么 (Intention)"。
-
-**"代码变更 + 意图描述"同时作为输入，是提升 AI 代码审查质量的最高效手段。**
-
-## 📝 CHANGELOG 规范
-
-推荐使用 [Keep a Changelog](https://keepachangelog.com/) 格式：
+Recommended to use [Keep a Changelog](https://keepachangelog.com/) format:
 
 ```markdown
 # Changelog
@@ -278,83 +280,75 @@ codex review --uncommitted -c model_reasoning_effort=xhigh
 ## [Unreleased]
 
 ### Added
-- 新增功能描述
+- New feature description
 
 ### Changed
-- 修改内容描述
+- Modification description
 
 ### Fixed
-- 修复问题描述
+- Bug fix description
 
 ## [1.0.0] - 2026-01-19
 
 ### Added
-- 初始版本发布
+- Initial release
 ```
 
-## 故障排除
+## Troubleshooting
 
-### Codex 命令未找到
+### Codex Command Not Found
 
 ```bash
-# 安装 Codex CLI
+# Install Codex CLI
 npm install -g @codex/cli
 
-# 或按照官方文档安装
+# Or follow official documentation
 # https://codex.ai/docs/installation
 ```
 
-### CHANGELOG 未检测到
+### CHANGELOG Not Detected
 
-确保项目根目录存在 CHANGELOG.md：
+Ensure CHANGELOG.md exists in project root:
 
 ```bash
-# 创建 CHANGELOG.md
+# Create CHANGELOG.md
 touch CHANGELOG.md
 
-# 添加基本结构
+# Add basic structure
 cat > CHANGELOG.md << 'EOF'
 # Changelog
 
 ## [Unreleased]
 
 ### Added
-- 初始版本
+- Initial version
 EOF
 ```
 
-### 审核超时
+### Review Timeout
 
-对于大规模变更，技能会自动调整超时时间：
-- 困难任务：30 分钟
-- 一般任务：10 分钟
+For large-scale changes, the skill automatically adjusts timeout:
+- Hard tasks: 30 minutes
+- Normal tasks: 10 minutes
 
-如果仍然超时，考虑将变更拆分为更小的提交。
+If still timing out, consider splitting changes into smaller commits.
 
-### 新增文件未被审核
+## Contributing
 
-v2.1.0 版本已自动处理此问题。如果仍遇到问题，手动暂存新增文件：
+Welcome to submit Issues and Pull Requests!
 
-```bash
-git add <new-file>
-```
-
-## 🤝 贡献
-
-欢迎提交 Issue 和 Pull Request！
-
-## 📄 许可证
+## License
 
 MIT License
 
-## 🔗 相关链接
+## Related Links
 
-- [Codex CLI 文档](https://codex.ai/docs)
-- [Claude Code 技能文档](https://code.claude.com/docs/en/skills)
-- [SKILL.md - 技能详细文档](./.claude/skills/codex-review/SKILL.md)
-- [codex-runner.md - 子技能文档](./.claude/skills/codex-review/codex-runner.md)
-- [项目仓库](https://github.com/BenedictKing/codex-review)
+- [Codex CLI Documentation](https://codex.ai/docs)
+- [Claude Code Skills Documentation](https://code.claude.com/docs/en/skills)
+- [SKILL.md - Detailed Skill Documentation](./.claude/skills/codex-review/SKILL.md)
+- [codex-runner.md - Sub-Skill Documentation](./.claude/skills/codex-review/codex-runner.md)
+- [Project Repository](https://github.com/BenedictKing/codex-review)
 
 ---
 
-🎉 配置完成！现在你可以享受专业的 AI 代码审核了！
+🎉 Setup complete! Now you can enjoy professional AI code reviews!
