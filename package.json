@@ -1,0 +1,28 @@
+{
+  "name": "codex-review",
+  "version": "2.1.0",
+  "description": "Professional code review skill for Claude Code - Automatically collects change context and generates CHANGELOG with Codex AI integration",
+  "keywords": [
+    "codex",
+    "claude",
+    "skill",
+    "code-review",
+    "ai",
+    "llm",
+    "changelog",
+    "lint"
+  ],
+  "author": "BenedictKing",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BenedictKing/codex-review.git"
+  },
+  "bugs": {
+    "url": "https://github.com/BenedictKing/codex-review/issues"
+  },
+  "homepage": "https://github.com/BenedictKing/codex-review#readme",
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
