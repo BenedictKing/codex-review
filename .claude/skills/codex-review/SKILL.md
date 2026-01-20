@@ -1,6 +1,6 @@
 ---
 name: codex-review
-version: 2.1.2
+version: 2.1.3
 author: BenedictKing
 description: "Professional code review skill for Claude Code. Automatically collects file changes and task status. Triggers when working directory has uncommitted changes, or reviews latest commit when clean. Triggers: code review, review, 代码审核, 代码审查, 检查代码"
 allowed-tools:
@@ -147,22 +147,36 @@ Use Task tool to invoke codex-runner, passing complete command (including Lint +
 Task parameters:
 - subagent_type: Bash
 - description: "Execute Lint and codex review"
+- timeout: 1800000 (30 minutes for difficult tasks) or 600000 (10 minutes for normal tasks)
 - prompt: Choose corresponding command based on project type and difficulty
 
 Go project - Difficult task:
   go fmt ./... && go vet ./... && codex review --uncommitted --config model_reasoning_effort=xhigh
+  (timeout: 1800000)
 
 Go project - Normal task:
   go fmt ./... && go vet ./... && codex review --uncommitted --config model_reasoning_effort=high
+  (timeout: 600000)
 
-Node project:
+Node project - Difficult task:
+  npm run lint:fix && codex review --uncommitted --config model_reasoning_effort=xhigh
+  (timeout: 1800000)
+
+Node project - Normal task:
   npm run lint:fix && codex review --uncommitted --config model_reasoning_effort=high
+  (timeout: 600000)
 
-Python project:
+Python project - Difficult task:
+  black . && ruff check --fix . && codex review --uncommitted --config model_reasoning_effort=xhigh
+  (timeout: 1800000)
+
+Python project - Normal task:
   black . && ruff check --fix . && codex review --uncommitted --config model_reasoning_effort=high
+  (timeout: 600000)
 
 Clean working directory:
   codex review --commit HEAD --config model_reasoning_effort=high
+  (timeout: 600000)
 ```
 
 ### 4. Self-Correction
