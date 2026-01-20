@@ -151,7 +151,7 @@ If Codex finds inconsistencies between CHANGELOG description and code logic:
 
 ## Dual-Skill Architecture
 
-This project uses a **two-stage architecture**, inspired by the `codex-review` design pattern:
+This project uses a **two-stage architecture**:
 
 ```
 User Request → Main Skill (codex-review)

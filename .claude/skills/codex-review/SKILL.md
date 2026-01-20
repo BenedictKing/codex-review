@@ -1,8 +1,8 @@
 ---
 name: codex-review
-version: 2.1.0
+version: 2.1.1
 author: BenedictKing
-description: 调用 codex 命令行进行代码审核，自动收集当前文件修改和任务状态一并发送；工作区干净时自动审核最新提交。触发词：代码审核、代码审查、review、code review、检查代码
+description: Professional code review skill for Claude Code. Automatically collects file changes and task status. Triggers when working directory has uncommitted changes, or reviews latest commit when clean. Triggers: code review, review, 代码审核, 代码审查, 检查代码
 allowed-tools:
   - Task
   - Bash
@@ -13,237 +13,237 @@ allowed-tools:
 user-invocable: true
 ---
 
-# Codex 代码审核技能
+# Codex Code Review Skill
 
-## 触发条件
+## Trigger Conditions
 
-当用户输入包含以下关键词时触发：
+Triggered when user input contains:
 
-- "代码审核"、"代码审查"、"审查代码"、"审核代码"
-- "review"、"code review"、"review code"、"codex 审核"
-- "帮我审核"、"检查代码"、"审一下"、"看看代码"
+- "代码审核", "代码审查", "审查代码", "审核代码"
+- "review", "code review", "review code", "codex 审核"
+- "帮我审核", "检查代码", "审一下", "看看代码"
 
-## 核心理念：意图 vs 实现
+## Core Concept: Intention vs Implementation
 
-单纯运行 `codex review --uncommitted` 只让 AI 看"做了什么 (Implementation)"。
-通过先记录意图，是在告诉 AI "想做什么 (Intention)"。
+Running `codex review --uncommitted` alone only shows AI "what was done (Implementation)".
+Recording intention first tells AI "what you wanted to do (Intention)".
 
-**"代码变更 + 意图描述"同时作为输入，是提升 AI 代码审查质量的最高效手段。**
+**"Code changes + intention description" as combined input is the most effective way to improve AI code review quality.**
 
-## 技能架构
+## Skill Architecture
 
-本技能分为两个阶段：
+This skill operates in two phases:
 
-1. **准备阶段**（当前上下文）：检查工作区、更新 CHANGELOG
-2. **审核阶段**（独立上下文）：调用 Task 工具执行 Lint + codex review（使用 context: fork 减少上下文浪费）
+1. **Preparation Phase** (current context): Check working directory, update CHANGELOG
+2. **Review Phase** (isolated context): Invoke Task tool to execute Lint + codex review (using context: fork to reduce context waste)
 
-## 执行步骤
+## Execution Steps
 
-### 0. 【首先】检查工作区状态
+### 0. [First] Check Working Directory Status
 
 ```bash
 git diff --name-only && git status --short
 ```
 
-**根据输出决定审核模式：**
+**Decide review mode based on output:**
 
-- **有未提交变更** → 继续执行步骤 1-4（常规流程）
-- **工作区干净** → 直接调用 codex-runner 执行：`codex review --commit HEAD`
+- **Has uncommitted changes** → Continue with steps 1-4 (normal flow)
+- **Clean working directory** → Directly invoke codex-runner: `codex review --commit HEAD`
 
-### 1. 【强制】检查 CHANGELOG 是否已更新
+### 1. [Mandatory] Check if CHANGELOG is Updated
 
-**在执行任何审核前，必须先检查 CHANGELOG.md 是否包含本次修改的说明。**
+**Before any review, must check if CHANGELOG.md contains description of current changes.**
 
 ```bash
-# 检查 CHANGELOG.md 是否在未提交变更中
+# Check if CHANGELOG.md is in uncommitted changes
 git diff --name-only | grep -E "(CHANGELOG|changelog)"
 ```
 
-**如果 CHANGELOG 未更新，你必须自动执行以下操作（不要让用户手动操作）：**
+**If CHANGELOG is not updated, you must automatically perform the following (don't ask user to do it manually):**
 
-1. **分析变更内容**：运行 `git diff --stat` 和 `git diff` 获取完整变更
-2. **自动生成 CHANGELOG 条目**：根据代码变更内容，生成符合规范的条目
-3. **写入 CHANGELOG.md**：使用 Edit 工具将条目插入到文件顶部的 `[Unreleased]` 区域
-4. **继续审核流程**：CHANGELOG 更新后立即继续执行后续步骤
+1. **Analyze changes**: Run `git diff --stat` and `git diff` to get complete changes
+2. **Auto-generate CHANGELOG entry**: Generate compliant entry based on code changes
+3. **Write to CHANGELOG.md**: Use Edit tool to insert entry at top of `[Unreleased]` section
+4. **Continue review flow**: Immediately proceed to next steps after CHANGELOG update
 
-**自动生成的 CHANGELOG 条目格式：**
+**Auto-generated CHANGELOG entry format:**
 
 ```markdown
 ## [Unreleased]
 
-### Added（新功能）/ Changed（修改）/ Fixed（修复）
+### Added / Changed / Fixed
 
-- 功能描述：解决了什么问题或实现了什么功能
-- 涉及文件：主要修改的文件/模块
+- Feature description: what problem was solved or what functionality was implemented
+- Affected files: main modified files/modules
 ```
 
-**示例 - 自动生成流程：**
+**Example - Auto-generation Flow:**
 
 ```
-1. 检测到 CHANGELOG 未更新
-2. 运行 git diff --stat 发现修改了 handlers/responses.go (+88 lines)
-3. 运行 git diff 分析具体内容：新增了 CompactHandler 函数
-4. 自动生成条目：
+1. Detected CHANGELOG not updated
+2. Run git diff --stat, found handlers/responses.go modified (+88 lines)
+3. Run git diff to analyze details: added CompactHandler function
+4. Auto-generate entry:
    ### Added
-   - 新增 `/v1/responses/compact` 端点，支持对话上下文压缩
-   - 支持多渠道故障转移和请求体大小限制
-5. 使用 Edit 工具写入 CHANGELOG.md
-6. 继续执行 lint 和 codex review
+   - Added `/v1/responses/compact` endpoint for conversation context compression
+   - Supports multi-channel failover and request body size limits
+5. Use Edit tool to write to CHANGELOG.md
+6. Continue with lint and codex review
 ```
 
-### 2. 【关键】暂存所有新增文件
+### 2. [Critical] Stage All New Files
 
-**在调用 codex 审核前，必须将所有新增文件（untracked files）加入 git 暂存区，否则 codex 会报 P1 错误。**
+**Before invoking codex review, must add all new files (untracked files) to git staging area, otherwise codex will report P1 error.**
 
 ```bash
-# 检查是否有新增文件
+# Check for new files
 git status --short | grep "^??"
 ```
 
-**如果有新增文件，自动执行：**
+**If there are new files, automatically execute:**
 
 ```bash
-# 安全地暂存所有新增文件（处理空列表和特殊文件名）
+# Safely stage all new files (handles empty list and special filenames)
 git ls-files --others --exclude-standard -z | while IFS= read -r -d '' f; do git add -- "$f"; done
 ```
 
-**说明：**
+**Explanation:**
 
-- `-z` 使用 null 字符分隔文件名，正确处理包含空格/换行的文件名
-- `while IFS= read -r -d ''` 逐个读取文件名
-- `git add -- "$f"` 使用 `--` 分隔符，正确处理以 `-` 开头的文件名
-- 当没有新增文件时，循环体不执行，安全跳过
-- 这不会暂存已修改的文件，只处理新增文件
-- codex 需要文件被 git 跟踪才能正确审核
+- `-z` uses null character to separate filenames, correctly handles filenames with spaces/newlines
+- `while IFS= read -r -d ''` reads filenames one by one
+- `git add -- "$f"` uses `--` separator, correctly handles filenames starting with `-`
+- When no new files exist, loop body doesn't execute, safely skipped
+- This won't stage modified files, only handles new files
+- codex needs files to be tracked by git for proper review
 
-### 3. 评估任务难度并调用 codex-runner
+### 3. Evaluate Task Difficulty and Invoke codex-runner
 
-**统计变更规模：**
+**Count change scale:**
 
 ```bash
-# 统计变更文件数量和代码行数
+# Count number of changed files and lines of code
 git diff --stat | tail -1
 ```
 
-**难度评估标准：**
+**Difficulty Assessment Criteria:**
 
-**困难任务**（满足任一条件）：
+**Difficult Tasks** (meets any condition):
 
-- 修改文件 ≥ 10 个
-- 代码变更 ≥ 500 行
-- 涉及核心架构/算法修改
-- 跨模块重构
-- 配置：`model_reasoning_effort=xhigh`，超时 30 分钟
+- Modified files ≥ 10
+- Code changes ≥ 500 lines
+- Involves core architecture/algorithm changes
+- Cross-module refactoring
+- Config: `model_reasoning_effort=xhigh`, timeout 30 minutes
 
-**一般任务**（其他情况）：
+**Normal Tasks** (other cases):
 
-- 配置：`model_reasoning_effort=high`，超时 10 分钟
+- Config: `model_reasoning_effort=high`, timeout 10 minutes
 
-**调用 codex-runner 子任务：**
+**Invoke codex-runner Subtask:**
 
-使用 Task 工具调用 codex-runner，传入完整命令（包括 Lint + codex review）：
+Use Task tool to invoke codex-runner, passing complete command (including Lint + codex review):
 
 ```
-Task 参数:
+Task parameters:
 - subagent_type: Bash
-- description: "执行 Lint 和 codex review"
-- prompt: 根据项目类型和难度选择对应命令
+- description: "Execute Lint and codex review"
+- prompt: Choose corresponding command based on project type and difficulty
 
-Go 项目 - 困难任务:
+Go project - Difficult task:
   go fmt ./... && go vet ./... && codex review --uncommitted --config model_reasoning_effort=xhigh
 
-Go 项目 - 一般任务:
+Go project - Normal task:
   go fmt ./... && go vet ./... && codex review --uncommitted --config model_reasoning_effort=high
 
-Node 项目:
+Node project:
   npm run lint:fix && codex review --uncommitted --config model_reasoning_effort=high
 
-Python 项目:
+Python project:
   black . && ruff check --fix . && codex review --uncommitted --config model_reasoning_effort=high
 
-工作区干净时:
+Clean working directory:
   codex review --commit HEAD --config model_reasoning_effort=high
 ```
 
-### 4. 自我修正
+### 4. Self-Correction
 
-如果 Codex 发现 Changelog 描述与代码逻辑不一致：
+If Codex finds Changelog description inconsistent with code logic:
 
-- **代码错误** → 修复代码
-- **描述不准确** → 更新 Changelog
+- **Code error** → Fix code
+- **Description inaccurate** → Update Changelog
 
-## 完整审核协议
+## Complete Review Protocol
 
-1. **[GATE] Check CHANGELOG** - 未更新则自动生成并写入（利用当前上下文理解变更意图）
-2. **[PREPARE] Stage Untracked Files** - 将所有新增文件加入 git 暂存区（避免 codex P1 错误）
-3. **[EXEC] Task → Lint + codex review** - 调用 Task 工具执行 Lint 和 codex（独立上下文，减少浪费）
-4. **[FIX] Self-Correction** - 意图 ≠ 实现时修复代码或更新描述
+1. **[GATE] Check CHANGELOG** - Auto-generate and write if not updated (leverage current context to understand change intention)
+2. **[PREPARE] Stage Untracked Files** - Add all new files to git staging area (avoid codex P1 error)
+3. **[EXEC] Task → Lint + codex review** - Invoke Task tool to execute Lint and codex (isolated context, reduce waste)
+4. **[FIX] Self-Correction** - Fix code or update description when intention ≠ implementation
 
-## Codex Review 命令参考
+## Codex Review Command Reference
 
-### 基本语法
+### Basic Syntax
 
 ```bash
 codex review [OPTIONS] [PROMPT]
 ```
 
-**注意**: `[PROMPT]` 参数不能与 `--uncommitted`、`--base`、`--commit` 同时使用。
+**Note**: `[PROMPT]` parameter cannot be used with `--uncommitted`, `--base`, or `--commit`.
 
-### 常用选项
+### Common Options
 
-| 选项                       | 说明                                                        | 示例                                                         |
-| -------------------------- | ----------------------------------------------------------- | ------------------------------------------------------------ |
-| `--uncommitted`            | 审核工作区所有未提交的更改（staged + unstaged + untracked） | `codex review --uncommitted`                                 |
-| `--base <BRANCH>`          | 审核相对于指定基准分支的更改                                | `codex review --base main`                                   |
-| `--commit <SHA>`           | 审核指定提交引入的更改                                      | `codex review --commit HEAD`                                 |
-| `--title <TITLE>`          | 可选的提交标题，显示在审核摘要中                            | `codex review --uncommitted --title "feat: add JSON parser"` |
-| `-c, --config <key=value>` | 覆盖配置值                                                  | `codex review --uncommitted -c model="o3"`                   |
+| Option                     | Description                                                      | Example                                                      |
+| -------------------------- | ---------------------------------------------------------------- | ------------------------------------------------------------ |
+| `--uncommitted`            | Review all uncommitted changes in working directory (staged + unstaged + untracked) | `codex review --uncommitted`                                 |
+| `--base <BRANCH>`          | Review changes relative to specified base branch                 | `codex review --base main`                                   |
+| `--commit <SHA>`           | Review changes introduced by specified commit                    | `codex review --commit HEAD`                                 |
+| `--title <TITLE>`          | Optional commit title, displayed in review summary               | `codex review --uncommitted --title "feat: add JSON parser"` |
+| `-c, --config <key=value>` | Override configuration values                                    | `codex review --uncommitted -c model="o3"`                   |
 
-### 使用场景示例
+### Usage Examples
 
 ```bash
-# 1. 审核所有未提交的更改（最常用）
+# 1. Review all uncommitted changes (most common)
 codex review --uncommitted
 
-# 2. 审核最新提交
+# 2. Review latest commit
 codex review --commit HEAD
 
-# 3. 审核指定提交
+# 3. Review specific commit
 codex review --commit abc1234
 
-# 4. 审核当前分支相对于 main 的所有更改
+# 4. Review all changes in current branch relative to main
 codex review --base main
 
-# 5. 审核当前分支相对于 develop 的更改
+# 5. Review changes in current branch relative to develop
 codex review --base develop
 
-# 6. 带标题的审核（标题会显示在审核摘要中）
+# 6. Review with title (title shown in review summary)
 codex review --uncommitted --title "fix: resolve JSON parsing errors"
 
-# 7. 使用特定模型进行审核
+# 7. Review using specific model
 codex review --uncommitted -c model="o3"
 ```
 
-### 重要限制
+### Important Limitations
 
-- `--uncommitted`、`--base`、`--commit` 三者互斥，不能同时使用
-- `[PROMPT]` 参数与上述三个选项互斥
-- 必须在 git 仓库目录下执行
+- `--uncommitted`, `--base`, `--commit` are mutually exclusive, cannot be used together
+- `[PROMPT]` parameter is mutually exclusive with the above three options
+- Must be executed in a git repository directory
 
-## 注意事项
+## Important Notes
 
-- 确保在 git 仓库目录下执行
-- **超时时间根据任务难度自动调整：**
-  - 困难任务：30 分钟 (`timeout: 1800000`)
-  - 一般任务：10 分钟 (`timeout: 600000`)
-- codex 命令需要已正确配置并登录
-- 大量修改时 codex 会自动分批处理
-- **CHANGELOG.md 必须在未提交变更中，否则 Codex 无法看到意图描述**
+- Ensure execution in git repository directory
+- **Timeout automatically adjusted based on task difficulty:**
+  - Difficult tasks: 30 minutes (`timeout: 1800000`)
+  - Normal tasks: 10 minutes (`timeout: 600000`)
+- codex command must be properly configured and logged in
+- codex automatically processes in batches for large changes
+- **CHANGELOG.md must be in uncommitted changes, otherwise Codex cannot see intention description**
 
-## 设计说明
+## Design Rationale
 
-**为什么分离上下文？**
+**Why separate contexts?**
 
-1. **CHANGELOG 更新需要当前上下文**：理解用户之前的对话、任务意图，才能生成准确的变更描述
-2. **Codex 审核不需要对话历史**：只需要代码变更和 CHANGELOG，独立运行更高效
-3. **减少 Token 消耗**：codex review 作为独立子任务，不携带无关的对话上下文
+1. **CHANGELOG update needs current context**: Understanding user's previous conversation and task intention to generate accurate change description
+2. **Codex review doesn't need conversation history**: Only needs code changes and CHANGELOG, more efficient to run independently
+3. **Reduce token consumption**: codex review as independent subtask, doesn't carry irrelevant conversation context

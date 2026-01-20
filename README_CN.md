@@ -234,7 +234,7 @@ codex review --uncommitted -c model_reasoning_effort=xhigh
 
 ### 双技能架构
 
-本项目采用**两阶段架构**，参考了 context7-auto-research 的设计模式：
+本项目采用**两阶段架构**：
 
 ```
 用户请求 → 主技能 (codex-review)
