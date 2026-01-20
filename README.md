@@ -35,7 +35,7 @@ Set up in 5 minutes
 # Install to Claude Code
 npx add-skill BenedictKing/codex-review
 
-# Or install globally to all detected agents
+# Or install globally to all detected agents (Claude Code, Cursor, Codex, etc.)
 npx add-skill BenedictKing/codex-review -g
 ```
 

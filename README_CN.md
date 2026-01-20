@@ -35,7 +35,7 @@ Codex Review 是一个智能的 Claude Code 技能，集成了 Codex AI 审核�
 # 安装到 Claude Code
 npx add-skill BenedictKing/codex-review
 
-# 或全局安装到所有检测到的代理
+# 或全局安装到所有检测到的 AI 编程助手（Claude Code、Cursor、Codex 等）
 npx add-skill BenedictKing/codex-review -g
 ```
 
