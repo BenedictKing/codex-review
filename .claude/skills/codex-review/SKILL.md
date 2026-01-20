@@ -1,8 +1,8 @@
 ---
 name: codex-review
-version: 2.1.1
+version: 2.1.2
 author: BenedictKing
-description: Professional code review skill for Claude Code. Automatically collects file changes and task status. Triggers when working directory has uncommitted changes, or reviews latest commit when clean. Triggers: code review, review, 代码审核, 代码审查, 检查代码
+description: "Professional code review skill for Claude Code. Automatically collects file changes and task status. Triggers when working directory has uncommitted changes, or reviews latest commit when clean. Triggers: code review, review, 代码审核, 代码审查, 检查代码"
 allowed-tools:
   - Task
   - Bash
