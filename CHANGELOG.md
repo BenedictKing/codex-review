@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- 改进任务难度评估标准：更精确的 xhigh/high 判定逻辑
+  - 新增总变更量计算（新增+删除）≥ 500 行触发 xhigh
+  - 新增单项指标：新增 ≥ 300 行或删除 ≥ 300 行触发 xhigh
+  - 添加详细的解析规则和决策逻辑说明
+  - 提供 6 个典型案例验证（包括 20 文件/1327 行变更场景）
+  - 修正 git diff --stat 解析规则，正确处理边缘情况：
+    - 单数形式："1 file changed"
+    - 缺失字段：当插入或删除为 0 时 Git 会省略该字段
+    - 纯重命名：可能显示 0 或完全省略插入/删除
+- 版本号更新：2.1.3 → 2.1.4
+
 ## [2.1.0] - 2026-01-19
 
 ### Added

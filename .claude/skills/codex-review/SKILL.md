@@ -1,6 +1,6 @@
 ---
 name: codex-review
-version: 2.1.3
+version: 2.1.4
 author: BenedictKing
 description: "Professional code review skill for Claude Code. Automatically collects file changes and task status. Triggers when working directory has uncommitted changes, or reviews latest commit when clean. Triggers: code review, review, 代码审核, 代码审查, 检查代码"
 allowed-tools:
@@ -130,7 +130,8 @@ git diff --stat | tail -1
 **Difficult Tasks** (meets any condition):
 
 - Modified files ≥ 10
-- Code changes ≥ 500 lines
+- Total code changes (insertions + deletions) ≥ 500 lines
+- Single metric: insertions ≥ 300 lines OR deletions ≥ 300 lines
 - Involves core architecture/algorithm changes
 - Cross-module refactoring
 - Config: `model_reasoning_effort=xhigh`, timeout 30 minutes
@@ -138,6 +139,46 @@ git diff --stat | tail -1
 **Normal Tasks** (other cases):
 
 - Config: `model_reasoning_effort=high`, timeout 10 minutes
+
+**Evaluation Method:**
+
+You MUST parse the `git diff --stat` output correctly to determine difficulty:
+
+```bash
+# Get the summary line (last line of git diff --stat)
+git diff --stat | tail -1
+# Example outputs:
+# "20 files changed, 342 insertions(+), 985 deletions(-)"
+# "1 file changed, 50 insertions(+)"  # No deletions
+# "3 files changed, 120 deletions(-)"  # No insertions
+```
+
+**Parsing Rules:**
+1. Extract file count from "X file(s) changed" (handle both "1 file" and "N files")
+2. Extract insertions from "Y insertion(s)(+)" if present (handle both "1 insertion" and "N insertions"), otherwise 0
+3. Extract deletions from "Z deletion(s)(-)" if present (handle both "1 deletion" and "N deletions"), otherwise 0
+4. Calculate total changes = insertions + deletions
+
+**Important Edge Cases:**
+- Single file: `"1 file changed"` (singular form)
+- No insertions: Git omits `"insertions(+)"` entirely → treat as 0
+- No deletions: Git omits `"deletions(-)"` entirely → treat as 0
+- Pure rename: May show `"0 insertions(+), 0 deletions(-)"` or omit both
+
+**Decision Logic (ANY condition triggers xhigh):**
+- IF file_count >= 10 → xhigh
+- IF total_changes >= 500 → xhigh
+- IF insertions >= 300 → xhigh
+- IF deletions >= 300 → xhigh
+- ELSE → high
+
+**Example Cases:**
+- ✅ "20 files changed, 342 insertions(+), 985 deletions(-)" → xhigh (files=20≥10, total=1327≥500, deletions=985≥300)
+- ✅ "5 files changed, 600 insertions(+), 50 deletions(-)" → xhigh (total=650≥500, insertions=600≥300)
+- ✅ "12 files changed, 100 insertions(+), 50 deletions(-)" → xhigh (files=12≥10)
+- ✅ "1 file changed, 400 deletions(-)" → xhigh (deletions=400≥300)
+- ❌ "3 files changed, 150 insertions(+), 80 deletions(-)" → high (all conditions fail)
+- ❌ "1 file changed, 50 insertions(+)" → high (no deletions, total=50<500)
 
 **Invoke codex-runner Subtask:**
 
