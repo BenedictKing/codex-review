@@ -37,3 +37,5 @@ logs/
 # Build outputs
 dist/
 build/
+
+.claude/settings.local.json
