@@ -1,6 +1,6 @@
 {
   "name": "codex-review",
-  "version": "2.1.0",
+  "version": "2.1.4",
   "description": "Professional code review skill for Claude Code - Automatically collects change context and generates CHANGELOG with Codex AI integration",
   "keywords": [
     "codex",
