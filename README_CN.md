@@ -29,19 +29,25 @@ Codex Review 是一个智能的 Claude Code 技能，集成了 Codex AI 审核�
 
 ## 安装方式
 
-### 方式一：使用 add-skill 安装（推荐）
+### 方式一：使用 skill-master 安装（推荐）
 
 ```bash
-# 安装到 Claude Code
-npx add-skill BenedictKing/codex-review
+# 全局安装到所有检测到的 AI 编程助手（Claude Code、Cursor、Codex 等）
+npx skill-master add -g BenedictKing/codex-review
 
-# 或全局安装到所有检测到的 AI 编程助手（Claude Code、Cursor、Codex 等）
-npx add-skill BenedictKing/codex-review -g
+# 或仅安装到当前项目
+npx skill-master add BenedictKing/codex-review
 ```
 
 Skill 会自动安装到 `~/.claude/skills/codex-review` 并被 Claude Code 加载。
 
-### 方式二：通过 Git Clone 手动安装
+### 方式二：使用 skills CLI 安装
+
+```bash
+npx skills add -g BenedictKing/codex-review
+```
+
+### 方式三：通过 Git Clone 手动安装
 
 ```bash
 # 克隆到 Claude Code 的 skills 目录

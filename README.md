@@ -29,19 +29,25 @@ Set up in 5 minutes
 
 ## Installation
 
-### Option 1: Install via skills CLI (Recommended)
+### Option 1: Install via skill-master (Recommended)
 
 ```bash
 # Install globally to all detected agents (Claude Code, Cursor, Codex, etc.)
-npx skills add -g BenedictKing/codex-review
+npx skill-master add -g BenedictKing/codex-review
 
 # Or install to current project only
-npx skills add BenedictKing/codex-review
+npx skill-master add BenedictKing/codex-review
 ```
 
 The skill will be automatically installed to `~/.claude/skills/codex-review` and loaded by Claude Code.
 
-### Option 2: Manual Installation via Git Clone
+### Option 2: Install via skills CLI
+
+```bash
+npx skills add -g BenedictKing/codex-review
+```
+
+### Option 3: Manual Installation via Git Clone
 
 ```bash
 # Clone to Claude Code's skills directory
