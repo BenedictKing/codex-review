@@ -1,6 +1,6 @@
 ---
 name: codex-review
-version: 2.1.4
+version: 2.1.5
 author: BenedictKing
 description: "Professional code review skill for Claude Code. Automatically collects file changes and task status. Triggers when working directory has uncommitted changes, or reviews latest commit when clean. Triggers: code review, review, 代码审核, 代码审查, 检查代码"
 allowed-tools:
@@ -127,6 +127,15 @@ git diff --stat | tail -1
 
 **Difficulty Assessment Criteria:**
 
+**Model + Reasoning Effort Combinations:**
+
+| Combination | Quality | Time | Timeout | Recommended For |
+|-------------|---------|------|---------|-----------------|
+| `model=gpt-5.2 model_reasoning_effort=xhigh` | Best | ~15-20 min | 40 min | Critical code, architecture changes |
+| `model=gpt-5.3-codex model_reasoning_effort=xhigh` | High | ~8-9 min | 15 min | Difficult tasks (default) |
+| `model=gpt-5.2 model_reasoning_effort=high` | High | ~8-9 min | 15 min | Alternative for difficult tasks |
+| `model=gpt-5.3-codex model_reasoning_effort=high` | Good | ~5-6 min | 10 min | Normal tasks (default) |
+
 **Difficult Tasks** (meets any condition):
 
 - Modified files ≥ 10
@@ -134,11 +143,11 @@ git diff --stat | tail -1
 - Single metric: insertions ≥ 300 lines OR deletions ≥ 300 lines
 - Involves core architecture/algorithm changes
 - Cross-module refactoring
-- Config: `model_reasoning_effort=xhigh`, timeout 30 minutes
+- Default config: `--config model=gpt-5.3-codex --config model_reasoning_effort=xhigh`, timeout 15 minutes
 
 **Normal Tasks** (other cases):
 
-- Config: `model_reasoning_effort=high`, timeout 10 minutes
+- Default config: `--config model=gpt-5.3-codex --config model_reasoning_effort=high`, timeout 10 minutes
 
 **Evaluation Method:**
 
@@ -188,35 +197,35 @@ Use Task tool to invoke codex-runner, passing complete command (including Lint +
 Task parameters:
 - subagent_type: Bash
 - description: "Execute Lint and codex review"
-- timeout: 1800000 (30 minutes for difficult tasks) or 600000 (10 minutes for normal tasks)
+- timeout: 900000 (15 minutes for difficult tasks) or 600000 (10 minutes for normal tasks)
 - prompt: Choose corresponding command based on project type and difficulty
 
 Go project - Difficult task:
-  go fmt ./... && go vet ./... && codex review --uncommitted --config model_reasoning_effort=xhigh
-  (timeout: 1800000)
+  go fmt ./... && go vet ./... && codex review --uncommitted --config model=gpt-5.3-codex --config model_reasoning_effort=xhigh
+  (timeout: 900000)
 
 Go project - Normal task:
-  go fmt ./... && go vet ./... && codex review --uncommitted --config model_reasoning_effort=high
+  go fmt ./... && go vet ./... && codex review --uncommitted --config model=gpt-5.3-codex --config model_reasoning_effort=high
   (timeout: 600000)
 
 Node project - Difficult task:
-  npm run lint:fix && codex review --uncommitted --config model_reasoning_effort=xhigh
-  (timeout: 1800000)
+  npm run lint:fix && codex review --uncommitted --config model=gpt-5.3-codex --config model_reasoning_effort=xhigh
+  (timeout: 900000)
 
 Node project - Normal task:
-  npm run lint:fix && codex review --uncommitted --config model_reasoning_effort=high
+  npm run lint:fix && codex review --uncommitted --config model=gpt-5.3-codex --config model_reasoning_effort=high
   (timeout: 600000)
 
 Python project - Difficult task:
-  black . && ruff check --fix . && codex review --uncommitted --config model_reasoning_effort=xhigh
-  (timeout: 1800000)
+  black . && ruff check --fix . && codex review --uncommitted --config model=gpt-5.3-codex --config model_reasoning_effort=xhigh
+  (timeout: 900000)
 
 Python project - Normal task:
-  black . && ruff check --fix . && codex review --uncommitted --config model_reasoning_effort=high
+  black . && ruff check --fix . && codex review --uncommitted --config model=gpt-5.3-codex --config model_reasoning_effort=high
   (timeout: 600000)
 
 Clean working directory:
-  codex review --commit HEAD --config model_reasoning_effort=high
+  codex review --commit HEAD --config model=gpt-5.3-codex --config model_reasoning_effort=high
   (timeout: 600000)
 ```
 
@@ -289,7 +298,7 @@ codex review --uncommitted -c model="o3"
 
 - Ensure execution in git repository directory
 - **Timeout automatically adjusted based on task difficulty:**
-  - Difficult tasks: 30 minutes (`timeout: 1800000`)
+  - Difficult tasks: 15 minutes (`timeout: 900000`)
   - Normal tasks: 10 minutes (`timeout: 600000`)
 - codex command must be properly configured and logged in
 - codex automatically processes in batches for large changes
