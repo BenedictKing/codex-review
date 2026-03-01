@@ -1,6 +1,6 @@
 ---
 name: codex-review
-version: 2.1.5
+version: 2.1.6
 author: BenedictKing
 description: "Professional code review skill for Claude Code. Automatically collects file changes and task status. Triggers when working directory has uncommitted changes, or reviews latest commit when clean. Triggers: code review, review, 代码审核, 代码审查, 检查代码"
 allowed-tools:
@@ -136,12 +136,18 @@ git diff --stat | tail -1
 | `model=gpt-5.2 model_reasoning_effort=high` | High | ~8-9 min | 15 min | Alternative for difficult tasks |
 | `model=gpt-5.3-codex model_reasoning_effort=high` | Good | ~5-6 min | 10 min | Normal tasks (default) |
 
+**Critical Tasks** (meets any condition, use best quality model):
+
+- Modified files ≥ 30
+- Total code changes (insertions + deletions) ≥ 2000 lines
+- Involves core architecture/algorithm changes (user explicitly mentioned)
+- Config: `--config model=gpt-5.2 --config model_reasoning_effort=xhigh`, timeout 40 minutes
+
 **Difficult Tasks** (meets any condition):
 
 - Modified files ≥ 10
 - Total code changes (insertions + deletions) ≥ 500 lines
 - Single metric: insertions ≥ 300 lines OR deletions ≥ 300 lines
-- Involves core architecture/algorithm changes
 - Cross-module refactoring
 - Default config: `--config model=gpt-5.3-codex --config model_reasoning_effort=xhigh`, timeout 15 minutes
 
@@ -174,20 +180,19 @@ git diff --stat | tail -1
 - No deletions: Git omits `"deletions(-)"` entirely → treat as 0
 - Pure rename: May show `"0 insertions(+), 0 deletions(-)"` or omit both
 
-**Decision Logic (ANY condition triggers xhigh):**
-- IF file_count >= 10 → xhigh
-- IF total_changes >= 500 → xhigh
-- IF insertions >= 300 → xhigh
-- IF deletions >= 300 → xhigh
-- ELSE → high
+**Decision Logic (check in order, first match wins):**
+- IF file_count >= 30 OR total_changes >= 2000 → **Critical** (gpt-5.2 + xhigh)
+- IF file_count >= 10 → **Difficult** (gpt-5.3-codex + xhigh)
+- IF total_changes >= 500 → **Difficult** (gpt-5.3-codex + xhigh)
+- IF insertions >= 300 OR deletions >= 300 → **Difficult** (gpt-5.3-codex + xhigh)
+- ELSE → **Normal** (gpt-5.3-codex + high)
 
 **Example Cases:**
-- ✅ "20 files changed, 342 insertions(+), 985 deletions(-)" → xhigh (files=20≥10, total=1327≥500, deletions=985≥300)
-- ✅ "5 files changed, 600 insertions(+), 50 deletions(-)" → xhigh (total=650≥500, insertions=600≥300)
-- ✅ "12 files changed, 100 insertions(+), 50 deletions(-)" → xhigh (files=12≥10)
-- ✅ "1 file changed, 400 deletions(-)" → xhigh (deletions=400≥300)
-- ❌ "3 files changed, 150 insertions(+), 80 deletions(-)" → high (all conditions fail)
-- ❌ "1 file changed, 50 insertions(+)" → high (no deletions, total=50<500)
+- ⭐ "50 files changed, 2000 insertions(+), 1500 deletions(-)" → **关键任务**，使用 `model=gpt-5.2 model_reasoning_effort=xhigh`，超时 40 分钟（核心架构变更）
+- ✅ "20 files changed, 342 insertions(+), 985 deletions(-)" → **困难任务**，使用 `model=gpt-5.3-codex model_reasoning_effort=xhigh`，超时 15 分钟
+- ✅ "5 files changed, 600 insertions(+), 50 deletions(-)" → **困难任务**，使用 `model=gpt-5.3-codex model_reasoning_effort=xhigh`，超时 15 分钟
+- ❌ "3 files changed, 150 insertions(+), 80 deletions(-)" → **普通任务**，使用 `model=gpt-5.3-codex model_reasoning_effort=high`，超时 10 分钟
+- ❌ "1 file changed, 50 insertions(+)" → **普通任务**，使用 `model=gpt-5.3-codex model_reasoning_effort=high`，超时 10 分钟
 
 **Invoke codex-runner Subtask:**
 
