@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.1.7] - 2026-03-09
+
+### Fixed
+
+- 修复任务难度评估中的统计命令错误
+  - 将 `git diff --stat` 改为 `git diff --stat HEAD`
+  - 原命令只统计未暂存改动，导致已暂存改动被忽略
+  - 新命令正确统计已暂存+未暂存的全部改动
+  - 添加详细说明：为什么必须使用 `HEAD` 作为基准
+  - 强调必须提取汇总行（`tail -1`）而非逐文件统计
+
 ### Changed
 
 - 改进任务难度评估标准：更精确的 xhigh/high 判定逻辑

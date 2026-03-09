@@ -1,6 +1,6 @@
 ---
 name: codex-review
-version: 2.1.6
+version: 2.1.7
 author: BenedictKing
 description: "Professional code review skill for Claude Code. Automatically collects file changes and task status. Triggers when working directory has uncommitted changes, or reviews latest commit when clean. Triggers: code review, review, 代码审核, 代码审查, 检查代码"
 allowed-tools:
@@ -121,9 +121,16 @@ git ls-files --others --exclude-standard -z | while IFS= read -r -d '' f; do git
 **Count change scale:**
 
 ```bash
-# Count number of changed files and lines of code
-git diff --stat | tail -1
+# Get summary line for ALL changes (staged + unstaged)
+# IMPORTANT: Must use 'HEAD' as base to include both staged and unstaged changes
+git diff --stat HEAD | tail -1
 ```
+
+**Why use `git diff --stat HEAD`:**
+- `git diff --stat` only shows unstaged changes
+- `git diff --cached --stat` only shows staged changes
+- `git diff --stat HEAD` shows BOTH staged and unstaged changes combined
+- The last line (`tail -1`) is the summary line with total file count and line changes
 
 **Difficulty Assessment Criteria:**
 
@@ -157,16 +164,21 @@ git diff --stat | tail -1
 
 **Evaluation Method:**
 
-You MUST parse the `git diff --stat` output correctly to determine difficulty:
+You MUST parse the `git diff --stat HEAD` output correctly to determine difficulty:
 
 ```bash
-# Get the summary line (last line of git diff --stat)
-git diff --stat | tail -1
+# Get the summary line (last line of git diff --stat HEAD)
+git diff --stat HEAD | tail -1
 # Example outputs:
 # "20 files changed, 342 insertions(+), 985 deletions(-)"
 # "1 file changed, 50 insertions(+)"  # No deletions
 # "3 files changed, 120 deletions(-)"  # No insertions
 ```
+
+**Critical: Why the summary line matters:**
+- Each file shows individual stats: `file.go | 171 ++++++++++++++++++++-`
+- Only the LAST line has the total: `6 files changed, 1341 insertions(+), 18 deletions(-)`
+- You must extract the last line with `tail -1` to get accurate totals
 
 **Parsing Rules:**
 1. Extract file count from "X file(s) changed" (handle both "1 file" and "N files")
