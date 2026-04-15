@@ -132,12 +132,14 @@ git ls-files --others --exclude-standard -z | while IFS= read -r -d '' f; do git
 
 ### 4. Intelligent Difficulty Assessment
 
-Automatically selects review configuration based on change scale:
+Automatically selects review configuration based on change scale.
+Only `gpt-5.3-codex` is recommended; the skill varies `model_reasoning_effort` and timeout by difficulty:
 
 | Difficulty | Trigger Conditions | Configuration | Timeout |
 |-----------|-------------------|---------------|---------|
-| **Hard Task** | Modified files ≥ 10<br>Code changes ≥ 500 lines<br>Core architecture changes | `model_reasoning_effort=xhigh` | 30 minutes |
-| **Normal Task** | Other cases | `model_reasoning_effort=high` | 10 minutes |
+| **Critical Task** | Modified files ≥ 30<br>Total code changes (insertions + deletions) ≥ 2000 lines<br>Core architecture/algorithm changes | `model=gpt-5.3-codex` + `model_reasoning_effort=xhigh` | 40 minutes |
+| **Difficult Task** | Modified files ≥ 10<br>Total code changes (insertions + deletions) ≥ 500 lines<br>Insertions ≥ 300 lines or deletions ≥ 300 lines<br>Cross-module refactoring | `model=gpt-5.3-codex` + `model_reasoning_effort=xhigh` | 15 minutes |
+| **Normal Task** | Other cases | `model=gpt-5.3-codex` + `model_reasoning_effort=high` | 10 minutes |
 
 ### 5. Lint + Codex Review
 
@@ -201,7 +203,7 @@ Skill:
 1. Detected 3 files modified, 200 lines changed
 2. Checked CHANGELOG not updated, auto-generated entry
 3. Executed go fmt && go vet
-4. Called codex review --uncommitted --config model_reasoning_effort=high
+4. Called codex review --uncommitted --config model=gpt-5.3-codex --config model_reasoning_effort=high
 5. Returned review results and improvement suggestions
 ```
 
@@ -211,11 +213,11 @@ Skill:
 User: Refactored entire module, need comprehensive review
 Skill:
 1. Detected 15 files modified, 800 lines changed
-2. Determined as hard task
+2. Determined as difficult task
 3. Auto-generated CHANGELOG entry
 4. Executed Lint
-5. Called codex review --uncommitted --config model_reasoning_effort=xhigh
-6. 30-minute timeout, deep review
+5. Called codex review --uncommitted --config model=gpt-5.3-codex --config model_reasoning_effort=xhigh
+6. 15-minute timeout, deep review
 ```
 
 ### Case 3: Review Latest Commit
@@ -246,7 +248,7 @@ codex review [OPTIONS] [PROMPT]
 | `--base <BRANCH>` | Review changes relative to specified base branch | `codex review --base main` |
 | `--commit <SHA>` | Review changes introduced by specified commit | `codex review --commit HEAD` |
 | `--title <TITLE>` | Optional commit title, displayed in review summary | `codex review --uncommitted --title "feat: add JSON parser"` |
-| `-c, --config <key=value>` | Override configuration values | `codex review --uncommitted -c model="o3"` |
+| `-c, --config <key=value>` | Override configuration values | `codex review --uncommitted -c model="gpt-5.3-codex"` |
 
 ### Usage Examples
 
@@ -263,11 +265,11 @@ codex review --commit abc1234
 # 4. Review all changes in current branch relative to main
 codex review --base main
 
-# 5. Review with specific model
-codex review --uncommitted -c model="o3"
+# 5. Review with the recommended model
+codex review --uncommitted -c model="gpt-5.3-codex"
 
 # 6. Adjust reasoning depth
-codex review --uncommitted -c model_reasoning_effort=xhigh
+codex review --uncommitted -c model="gpt-5.3-codex" -c model_reasoning_effort=xhigh
 ```
 
 ### Important Limitations
@@ -333,11 +335,12 @@ EOF
 
 ### Review Timeout
 
-For large-scale changes, the skill automatically adjusts timeout:
-- Hard tasks: 30 minutes
+The skill automatically adjusts timeout for larger changes:
+- Critical tasks: 40 minutes
+- Difficult tasks: 15 minutes
 - Normal tasks: 10 minutes
 
-If still timing out, consider splitting changes into smaller commits.
+If review still times out, consider splitting changes into smaller commits.
 
 ## Contributing
 

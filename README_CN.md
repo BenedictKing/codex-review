@@ -132,12 +132,14 @@ git ls-files --others --exclude-standard -z | while IFS= read -r -d '' f; do git
 
 ### 4. 智能难度评估
 
-根据变更规模自动选择审核配置：
+根据变更规模自动选择审核配置。
+当前文档仅推荐 `gpt-5.3-codex`；技能会根据难度调整 `model_reasoning_effort` 和超时时间：
 
 | 难度级别 | 触发条件 | 配置 | 超时时间 |
 |---------|---------|------|---------|
-| **困难任务** | 修改文件 ≥ 10 个<br>代码变更 ≥ 500 行<br>核心架构修改 | `model_reasoning_effort=xhigh` | 30 分钟 |
-| **一般任务** | 其他情况 | `model_reasoning_effort=high` | 10 分钟 |
+| **关键任务** | 修改文件 ≥ 30 个<br>总代码变更（新增 + 删除）≥ 2000 行<br>核心架构/算法修改 | `model=gpt-5.3-codex` + `model_reasoning_effort=xhigh` | 40 分钟 |
+| **困难任务** | 修改文件 ≥ 10 个<br>总代码变更（新增 + 删除）≥ 500 行<br>新增 ≥ 300 行或删除 ≥ 300 行<br>跨模块重构 | `model=gpt-5.3-codex` + `model_reasoning_effort=xhigh` | 15 分钟 |
+| **一般任务** | 其他情况 | `model=gpt-5.3-codex` + `model_reasoning_effort=high` | 10 分钟 |
 
 ### 5. Lint + Codex 审核
 
@@ -179,7 +181,7 @@ git ls-files --others --exclude-standard -z | while IFS= read -r -d '' f; do git
 1. 检测到 3 个文件修改，200 行变更
 2. 检查 CHANGELOG 未更新，自动生成条目
 3. 执行 go fmt && go vet
-4. 调用 codex review --uncommitted --config model_reasoning_effort=high
+4. 调用 codex review --uncommitted --config model=gpt-5.3-codex --config model_reasoning_effort=high
 5. 返回审核结果和改进建议
 ```
 
@@ -192,8 +194,8 @@ git ls-files --others --exclude-standard -z | while IFS= read -r -d '' f; do git
 2. 判定为困难任务
 3. 自动生成 CHANGELOG 条目
 4. 执行 Lint
-5. 调用 codex review --uncommitted --config model_reasoning_effort=xhigh
-6. 30 分钟超时，深度审核
+5. 调用 codex review --uncommitted --config model=gpt-5.3-codex --config model_reasoning_effort=xhigh
+6. 15 分钟超时，深度审核
 ```
 
 ### 场景 3：审核最新提交
@@ -223,11 +225,11 @@ codex review --commit abc1234
 # 审核相对于 main 分支的所有更改
 codex review --base main
 
-# 使用特定模型
-codex review --uncommitted -c model="o3"
+# 使用推荐模型
+codex review --uncommitted -c model="gpt-5.3-codex"
 
 # 调整推理深度
-codex review --uncommitted -c model_reasoning_effort=xhigh
+codex review --uncommitted -c model="gpt-5.3-codex" -c model_reasoning_effort=xhigh
 ```
 
 ### 重要限制
@@ -332,7 +334,8 @@ EOF
 ### 审核超时
 
 对于大规模变更，技能会自动调整超时时间：
-- 困难任务：30 分钟
+- 关键任务：40 分钟
+- 困难任务：15 分钟
 - 一般任务：10 分钟
 
 如果仍然超时，考虑将变更拆分为更小的提交。

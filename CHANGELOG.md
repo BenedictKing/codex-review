@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.1.8] - 2026-04-15
+
+### Changed
+
+- 调整 codex-review 技能中的模型推荐策略
+  - 移除 `gpt-5.2` 相关推荐与示例
+  - 统一改为仅推荐 `gpt-5.3-codex`
+  - 保留基于任务复杂度的 `model_reasoning_effort=high/xhigh` 区分
+  - 同步更新关键任务/困难任务的配置说明与决策示例
+
 ## [2.1.7] - 2026-03-09
 
 ### Fixed
