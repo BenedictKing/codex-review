@@ -1,8 +1,8 @@
 ---
 name: codex-review
-version: 2.1.8
+version: 2.1.9
 author: BenedictKing
-description: "Professional code review skill for Claude Code. Automatically collects file changes and task status. Triggers when working directory has uncommitted changes, or reviews latest commit when clean. Triggers: code review, review, 代码审核, 代码审查, 检查代码"
+description: "Professional code review skill for Claude Code. Automatically collects file changes and task status, and proactively fixes P0/P1/P2 issues after review. Triggers when working directory has uncommitted changes, or reviews latest commit when clean. Triggers: code review, review, 代码审核, 代码审查, 检查代码"
 allowed-tools:
   - Task
   - Bash
@@ -258,19 +258,38 @@ Clean working directory:
   (timeout: 600000)
 ```
 
-### 4. Self-Correction
+### 4. Self-Correction and Severity-Driven Fixes
 
 If Codex finds Changelog description inconsistent with code logic:
 
 - **Code error** → Fix code
 - **Description inaccurate** → Update Changelog
 
+If Codex reports **P0 / P1 / P2** issues, you must **proactively fix them immediately** instead of stopping at reporting.
+
+**Required behavior:**
+
+1. **P0 / P1 / P2 present** → directly modify code or related files to fix the issue
+2. **After fixing** → rerun the necessary lint / validation / review command to confirm the issue is resolved
+3. **Only report completion after recheck** → clearly state what was fixed and what verification passed
+4. **P3 or lower / suggestion only** → may report without automatic modification unless the user explicitly asks for further cleanup
+
+**Fix priority:**
+- **P0**: Blocker, security, data loss, correctness failure → must fix first
+- **P1**: High-impact functional or logic bug → must fix
+- **P2**: Important maintainability / correctness issue with clear fix → should proactively fix in the same run
+
+**Constraints:**
+- Keep fixes minimal and directly related to the reported issue
+- Do not expand scope into unrelated refactors
+- Preserve existing style and architecture unless the issue requires structural adjustment
+
 ## Complete Review Protocol
 
 1. **[GATE] Check CHANGELOG** - Auto-generate and write if not updated (leverage current context to understand change intention)
 2. **[PREPARE] Stage Untracked Files** - Add all new files to git staging area (avoid codex P1 error)
 3. **[EXEC] Task → Lint + codex review** - Invoke Task tool to execute Lint and codex (isolated context, reduce waste)
-4. **[FIX] Self-Correction** - Fix code or update description when intention ≠ implementation
+4. **[FIX] Severity-Driven Self-Correction** - Fix code or update description when intention ≠ implementation; proactively fix P0/P1/P2 issues and rerun checks
 
 ## Codex Review Command Reference
 
